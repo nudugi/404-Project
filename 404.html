@@ -178,3 +178,93 @@
         .search-box {
             margin-top: 20px;
             max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease, margin-top 0.5s ease;
+            opacity: 0;
+            width: 300px;
+        }
+        .search-box.active {
+            max-height: 60px;
+            opacity: 1;
+            margin-top: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-family: Consolas, monaco, monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: black;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+
+        /* ----- 새로 추가될 메뉴 아이템 스타일 ----- */
+        .ai-generator-link {
+            font-family: 'Bebas Neue', sans-serif; /* 기존 폰트 사용 */
+            font-size: 1.2rem; /* 적절한 크기 */
+            color: black; /* 기존 텍스트 색상 */
+            text-decoration: none; /* 밑줄 없음 */
+            margin-top: 25px; /* 검색 컨테이너 위로 적절한 간격 */
+            letter-spacing: 1px;
+            transition: color 0.3s ease, transform 0.2s ease; /* 호버 효과 */
+        }
+        .ai-generator-link:hover {
+            color: #555; /* 호버 시 색상 변경 */
+            transform: scale(1.05); /* 호버 시 약간 확대 */
+        }
+        /* ----- 새로 추가될 메뉴 아이템 스타일 끝 ----- */
+
+    </style>
+</head>
+
+<body>
+    <div class="top-line-container">
+        <div class="top-line"></div>
+    </div>
+
+    <div class="logo-container">
+        <a href="404.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center;">
+            <img src="https://github.com/nudugi/data-center/blob/main/images/logo.jpeg?raw=true" alt="Logo" class="logo">
+            <div class="logo-text">27.42</div>
+        </a>
+    </div>
+
+    <div class="center-content">
+        <div class="main-text">27.42</div>
+        <div class="sub-text">The Shape Before Definition</div>
+        <div class="IG-text">IG : @not.found.obj</div>
+
+        <a href="/generator" class="ai-generator-link">AI Statement Generator</a>
+
+        <div class="search-container">
+            <div class="search-icon" id="toggleSearch">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="search-box" id="searchBox">
+                <input type="text" class="search-input" placeholder="Search..." aria-label="Search">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleSearch = document.getElementById('toggleSearch');
+            const searchBox = document.getElementById('searchBox');
+            
+            toggleSearch.addEventListener('click', function() {
+                searchBox.classList.toggle('active');
+                if (searchBox.classList.contains('active')) {
+                    setTimeout(() => {
+                        document.querySelector('.search-input').focus();
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
