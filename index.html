@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 기반 작가노트 & 전시 서문 생성기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-top: 80px; /* 로고를 위한 상단 여백 */
+            background-color: #f4f7f6; /* 밝은 회색 배경 */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative; /* 로고 absolute 포지셔닝 기준 */
+        }
+
+        /* 로고 컨테이너 스타일 */
+        .generator-logo-container {
+            text-align: center;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .generator-logo {
+            height: 50px;
+            width: 50px; /* 로고 크기 조정 */
+            border-radius: 50%; /* 원형 로고 */
+            border: 1px solid #ccc; /* 테두리 추가 */
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+        .generator-logo:hover {
+            transform: scale(1.05);
+        }
+        .generator-logo-text {
+            font-family: Consolas, monaco, monospace; /* 메인 페이지와 동일한 폰트 */
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: black;
+            line-height: 1;
+            margin-top: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50; /* 진한 파랑 계열 */
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2em;
+        }
+        form {
+            background-color: #ffffff;
+            margin-bottom: 30px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.95em;
+        }
+        input[type="text"],
+        textarea {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1em;
+            color: #333;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            width: calc(100% - 30px); /* 패딩 고려 */
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        button {
+            padding: 14px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            align-self: flex-end; /* 버튼 오른쪽 정렬 */
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        #result {
+            background-color: #ffffff;
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+        #result h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 1.8em;
+        }
+        .result-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f8f8; /* 섹션별 배경색 */
+            border-radius: 10px;
+            border: 1px solid #eee;
+            box-shadow: inset 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .result-section strong {
+            display: block; /* 제목을 블록 요소로 만들어 줄바꿈 */
+            margin-bottom: 10px;
+            color: #007bff;
+            font-size: 1.1em;
+            font-weight: 700;
+            text-align: center;
+        }
+        .result-section pre {
+            white-space: pre-wrap; /* 공백 및 줄바꿈 유지, 자동 줄바꿈 */
+            word-break: break-word; /* 긴 단어 강제 줄바꿈 */
+            font-size: 0.95em;
+            line-height: 1.8;
+            max-height: 300px; /* 스크롤 가능하게 할 최대 높이 */
+            overflow-y: auto; /* 내용이 길어지면 스크롤바 생성 */
+            padding: 10px;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            background-color: #fcfcfc;
+            color: #444;
+        }
+        .hidden {
+            display: none;
+        }
+        #error {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffe0e0;
+            border: 1px solid #ffb3b3;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="generator-logo-container">
+        <a href="/" style="text-decoration: none; display: flex; flex-direction: column; align-items: center;">
+            <img src="https://github.com/SupremacyJH/data-center/blob/main/images/logo.jpeg?raw=true" alt="27.42 Logo" class="generator-logo">
+            <div class="generator-logo-text">27.42</div>
+        </a>
+    </div>
+
+    <h1>AI Statement Generator</h1>
+    <h2>AI 기반 작가노트 & 전시 서문 생성기</h2>
+    <form id="inputForm">
+        <label for="exhibition_title">전시 제목:</label>
+        <input type="text" id="exhibition_title" name="exhibition_title" placeholder="예: '환상의 숲, 숨겨진 이야기'" required>
+
+        <label for="exhibition_theme">전시 주제:</label>
+        <input type="text" id="exhibition_theme" name="exhibition_theme" placeholder="예: '자연과 인간의 상호작용, 치유와 성찰'" required>
+
+        <label for="artist_name">작가 이름:</label>
+        <input type="text" id="artist_name" name="artist_name" placeholder="예: '김미술'" required>
+
+        <label for="work_description">주요 작품 설명 (각 작품별 핵심 내용과 특징, 여러 작품인 경우 줄바꿈으로 구분):</label>
+        <textarea id="work_description" name="work_description" rows="7" placeholder="예: '작품 1: 캔버스에 유화, 숲 속 동물의 역동적인 움직임을 표현.\n작품 2: 조형 설치물, 버려진 나무 재료로 생명의 순환을 상징.' " required></textarea>
+
+        <label for="exhibition_intent">전시 의도 (이 전시를 통해 관람객에게 전달하고 싶은 메시지):</label>
+        <textarea id="exhibition_intent" name="exhibition_intent" rows="5" placeholder="예: '바쁜 일상 속에서 잠시 멈춰 자연의 아름다움을 느끼고, 내면의 평화를 찾도록 돕고자 합니다.' " required></textarea>
+
+        <label for="additional_info">추가 정보 (작가의 예술관, 영향받은 사조, 특별한 기법 등 선택 사항):</label>
+        <textarea id="additional_info" name="additional_info" rows="3" placeholder="예: '작가는 동양화의 여백 미학을 현대적으로 재해석하여 사용하며, 주로 자연에서 영감을 받습니다.' "></textarea>
+
+        <button type="button" onclick="generate()">생성하기</button>
+    </form>
+
+    <div id="result" class="hidden">
+        <h2>생성 결과</h2>
+        <div class="result-section">
+            <strong>작가노트:</strong><pre id="artist_note"></pre>
+        </div>
+        <div class="result-section">
+            <strong>전시 서문:</strong><pre id="exhibition_preface"></pre>
+        </div>
+        <div class="result-section">
+            <strong>작품 설명:</strong><pre id="work_explanation"></pre>
+        </div>
+    </div>
+
+    <div id="error" class="hidden"></div>
+
+    <script>
+        async function generate() {
+            const form = document.getElementById('inputForm');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            const artistNoteDiv = document.getElementById('artist_note');
+            const exhibitionPrefaceDiv = document.getElementById('exhibition_preface');
+            const workExplanationDiv = document.getElementById('work_explanation');
+
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+
+            const generateButton = form.querySelector('button');
+            const originalButtonText = generateButton.textContent;
+            generateButton.textContent = '생성 중...';
+            generateButton.disabled = true;
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/generate', { // Flask의 /generate 엔드포인트는 그대로 사용
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    errorDiv.textContent = `오류 발생: ${errorData.error || response.statusText}`;
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                const data = await response.json();
+                artistNoteDiv.textContent = data.artist_note;
+                exhibitionPrefaceDiv.textContent = data.exhibition_preface;
+                workExplanationDiv.textContent = data.work_explanation;
+                resultDiv.classList.remove('hidden');
+
+            } catch (error) {
+                errorDiv.textContent = `클라이언트 오류: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                generateButton.textContent = originalButtonText;
+                generateButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
